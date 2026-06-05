@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VendBot 3000</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ─── Header ─────────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-logo">🤖 VendBot <span class="accent">3000</span></div>
+  <nav>
+    <a href="/admin" class="btn-admin">Admin Panel</a>
+  </nav>
+</header>
+
+<!-- ─── Main Layout ──────────────────────────────────────────────────────────── -->
+<main class="vm-layout">
+
+  <!-- Products Grid -->
+  <section class="products-panel">
+    <div class="panel-title">SELECT PRODUCT</div>
+
+    <div class="category-tabs" id="categoryTabs">
+      <button class="tab active" data-cat="All">All</button>
+      <button class="tab" data-cat="Drinks">Drinks</button>
+      <button class="tab" data-cat="Snacks">Snacks</button>
+      <button class="tab" data-cat="Others">Others</button>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+      <!-- injected by JS -->
+    </div>
+  </section>
+
+  <!-- Payment Panel -->
+  <aside class="payment-panel">
+    <div class="panel-title">PAYMENT TERMINAL</div>
+
+    <!-- Display Screen -->
+    <div class="display-screen">
+      <div class="screen-row">
+        <span class="screen-label">PRODUCT</span>
+        <span class="screen-value" id="screenProduct">— Select item —</span>
+      </div>
+      <div class="screen-row">
+        <span class="screen-label">PRICE</span>
+        <span class="screen-value" id="screenPrice">RM 0.00</span>
+      </div>
+      <div class="screen-row">
+        <span class="screen-label">INSERTED</span>
+        <span class="screen-value neon-yellow" id="screenInserted">RM 0.00</span>
+      </div>
+      <div class="screen-row">
+        <span class="screen-label">CHANGE</span>
+        <span class="screen-value neon-cyan" id="screenChange">RM 0.00</span>
+      </div>
+    </div>
+
+    <!-- Coin Buttons -->
+    <div class="coin-section">
+      <div class="coin-label">INSERT COINS / NOTES</div>
+      <div class="coin-grid">
+        <button class="coin-btn" data-value="0.10">10¢</button>
+        <button class="coin-btn" data-value="0.20">20¢</button>
+        <button class="coin-btn" data-value="0.50">50¢</button>
+        <button class="coin-btn" data-value="1.00">RM 1</button>
+        <button class="coin-btn" data-value="5.00">RM 5</button>
+        <button class="coin-btn" data-value="10.00">RM 10</button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn-purchase" id="btnPurchase" disabled>
+        <span>⚡ PURCHASE</span>
+      </button>
+      <button class="btn-cancel" id="btnCancel">
+        <span>✕ CANCEL</span>
+      </button>
+    </div>
+
+    <!-- Status message -->
+    <div class="status-msg" id="statusMsg"></div>
+  </aside>
+
+</main>
+
+<!-- ─── Success Popup ─────────────────────────────────────────────────────── -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-box">
+    <div class="popup-emoji" id="popupEmoji">🎉</div>
+    <div class="popup-title">DISPENSING!</div>
+    <div class="popup-product" id="popupProduct"></div>
+    <div class="popup-change" id="popupChange"></div>
+    <div class="popup-bar">
+      <div class="popup-bar-fill" id="popupBarFill"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

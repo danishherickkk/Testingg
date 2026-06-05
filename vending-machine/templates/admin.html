@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VendBot Admin</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="admin-body">
+
+<!-- ─── Password Gate ─────────────────────────────────────────────────────── -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">🔐 Admin Access</div>
+    <p class="auth-sub">VendBot 3000 Control Panel</p>
+    <input type="password" id="authInput" class="auth-input" placeholder="Enter password…" />
+    <button class="auth-btn" id="authBtn">UNLOCK</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- ─── Dashboard ──────────────────────────────────────────────────────────── -->
+<div class="admin-wrap" id="adminWrap" style="display:none">
+
+  <header class="admin-header">
+    <div class="header-logo">🤖 VendBot <span class="accent">Admin</span></div>
+    <nav>
+      <a href="/" class="btn-admin">← Customer View</a>
+      <button class="btn-admin btn-logout" id="btnLogout">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value neon-cyan" id="statRevenue">RM 0.00</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value neon-yellow" id="statTransactions">0</div>
+      <div class="stat-label">Transactions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value neon-cyan" id="statProducts">0</div>
+      <div class="stat-label">Products</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value neon-yellow" id="statLowStock">0</div>
+      <div class="stat-label">Low Stock (≤5)</div>
+    </div>
+  </div>
+
+  <div class="admin-grid">
+
+    <!-- Left Column -->
+    <div class="admin-col">
+
+      <!-- Products Table -->
+      <div class="admin-card">
+        <div class="card-title">📦 Products</div>
+        <div class="table-wrap">
+          <table class="admin-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Emoji</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="admin-card">
+        <div class="card-title">🧾 Transaction History</div>
+        <div class="table-wrap">
+          <table class="admin-table" id="txTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Paid</th>
+                <th>Change</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="admin-col admin-col-narrow">
+
+      <!-- Add Product -->
+      <div class="admin-card">
+        <div class="card-title">➕ Add Product</div>
+        <form id="addProductForm" class="admin-form">
+          <label>Name
+            <input type="text" name="name" required placeholder="e.g. Sparkling Water" />
+          </label>
+          <label>Emoji
+            <input type="text" name="emoji" required placeholder="💦" maxlength="2" />
+          </label>
+          <label>Category
+            <select name="category">
+              <option value="Drinks">Drinks</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Others">Others</option>
+            </select>
+          </label>
+          <label>Price (RM)
+            <input type="number" name="price" required min="0.10" step="0.10" placeholder="1.50" />
+          </label>
+          <label>Initial Stock
+            <input type="number" name="stock" required min="0" placeholder="10" />
+          </label>
+          <button type="submit" class="form-btn">Add Product</button>
+          <div class="form-msg" id="addMsg"></div>
+        </form>
+      </div>
+
+      <!-- Restock -->
+      <div class="admin-card">
+        <div class="card-title">🔄 Restock Product</div>
+        <form id="restockForm" class="admin-form">
+          <label>Product
+            <select name="product_id" id="restockSelect"></select>
+          </label>
+          <label>Add Quantity
+            <input type="number" name="quantity" required min="1" placeholder="10" />
+          </label>
+          <button type="submit" class="form-btn">Restock</button>
+          <div class="form-msg" id="restockMsg"></div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── Edit Modal ────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="editOverlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Edit Product</div>
+    <form id="editForm" class="admin-form">
+      <input type="hidden" id="editId" />
+      <label>Name
+        <input type="text" id="editName" required />
+      </label>
+      <label>Emoji
+        <input type="text" id="editEmoji" required maxlength="2" />
+      </label>
+      <label>Category
+        <select id="editCategory">
+          <option value="Drinks">Drinks</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Others">Others</option>
+        </select>
+      </label>
+      <label>Price (RM)
+        <input type="number" id="editPrice" required min="0.10" step="0.10" />
+      </label>
+      <label>Stock
+        <input type="number" id="editStock" required min="0" />
+      </label>
+      <div class="modal-actions">
+        <button type="submit" class="form-btn">Save Changes</button>
+        <button type="button" class="form-btn btn-cancel-modal" id="closeEditModal">Cancel</button>
+      </div>
+      <div class="form-msg" id="editMsg"></div>
+    </form>
+  </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
