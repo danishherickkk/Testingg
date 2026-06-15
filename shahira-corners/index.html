@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#1b7a43" />
+<title>Shahira Corners — Food Ordering</title>
+<style>
+  :root{
+    --green:#1b7a43;
+    --green-dark:#145c32;
+    --green-light:#e7f4ec;
+    --green-mid:#34a866;
+    --white:#ffffff;
+    --ink:#1f2a24;
+    --muted:#6b7c72;
+    --line:#d9e7df;
+    --danger:#c0392b;
+    --shadow:0 6px 22px rgba(20,92,50,.12);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--green-light);
+    color:var(--ink);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;}
+  button{font-family:inherit;cursor:pointer;}
+  input{font-family:inherit;}
+
+  /* ---------- Header ---------- */
+  .app-header{
+    position:sticky;top:0;z-index:50;
+    background:var(--green);
+    color:var(--white);
+    box-shadow:var(--shadow);
+  }
+  .app-header-inner{
+    max-width:1100px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:12px 16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand .logo{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--white);color:var(--green);
+    display:grid;place-items:center;font-weight:800;font-size:20px;flex:none;
+  }
+  .brand h1{font-size:1.15rem;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand small{display:block;font-weight:400;opacity:.85;font-size:.7rem;letter-spacing:.5px;}
+  .nav{display:flex;gap:6px;flex-wrap:wrap;}
+  .nav button{
+    background:rgba(255,255,255,.14);
+    border:0;color:#fff;border-radius:999px;
+    padding:8px 14px;font-size:.85rem;font-weight:600;transition:.15s;
+  }
+  .nav button.active{background:#fff;color:var(--green);}
+  .nav button:hover{background:rgba(255,255,255,.28);}
+
+  /* ---------- Layout ---------- */
+  main{max-width:1100px;margin:0 auto;padding:16px;padding-bottom:120px;}
+  .page{display:none;animation:fade .25s ease;}
+  .page.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .section-title{display:flex;align-items:center;gap:10px;margin:22px 0 12px;}
+  .section-title h2{margin:0;font-size:1.25rem;color:var(--green-dark);}
+  .section-title .pill{
+    background:var(--green);color:#fff;border-radius:999px;
+    font-size:.7rem;padding:3px 10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  }
+
+  .hero{
+    background:linear-gradient(135deg,var(--green),var(--green-mid));
+    color:#fff;border-radius:var(--radius);padding:22px;margin-bottom:8px;
+    box-shadow:var(--shadow);
+  }
+  .hero h2{margin:0 0 6px;font-size:1.45rem;}
+  .hero p{margin:0;opacity:.92;font-size:.95rem;}
+
+  /* ---------- Menu grid ---------- */
+  .menu-grid{
+    display:grid;gap:12px;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  }
+  .card{
+    background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px;
+    display:flex;flex-direction:column;gap:10px;
+    box-shadow:0 2px 8px rgba(20,92,50,.05);
+  }
+  .card .emoji{font-size:1.8rem;}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .card h3{margin:0;font-size:1.02rem;}
+  .card .price{color:var(--green);font-weight:800;white-space:nowrap;}
+  .card .desc{color:var(--muted);font-size:.82rem;margin:0;min-height:1.2em;}
+  .qty-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px;}
+  .stepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--green);border-radius:999px;overflow:hidden;}
+  .stepper button{
+    background:var(--white);color:var(--green);border:0;
+    width:38px;height:38px;font-size:1.3rem;font-weight:700;display:grid;place-items:center;line-height:1;
+  }
+  .stepper button:active{background:var(--green-light);}
+  .stepper .count{min-width:34px;text-align:center;font-weight:800;font-size:1rem;}
+  .add-btn{
+    background:var(--green);color:#fff;border:0;border-radius:999px;
+    padding:9px 16px;font-weight:700;font-size:.9rem;flex:1;transition:.15s;
+  }
+  .add-btn:hover{background:var(--green-dark);}
+
+  /* ---------- Cart bar (floating) ---------- */
+  .cart-bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:var(--green-dark);color:#fff;
+    box-shadow:0 -6px 22px rgba(0,0,0,.18);
+    transform:translateY(120%);transition:transform .25s ease;
+  }
+  .cart-bar.show{transform:translateY(0);}
+  .cart-bar-inner{
+    max-width:1100px;margin:0 auto;padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .cart-bar .info{display:flex;align-items:center;gap:12px;min-width:0;}
+  .cart-bar .badge{
+    background:#fff;color:var(--green-dark);border-radius:12px;
+    min-width:34px;height:34px;padding:0 8px;display:grid;place-items:center;font-weight:800;
+  }
+  .cart-bar .label{font-size:.85rem;line-height:1.2;}
+  .cart-bar .label b{font-size:1rem;}
+  .btn-primary{
+    background:#fff;color:var(--green-dark);border:0;border-radius:999px;
+    padding:11px 20px;font-weight:800;font-size:.92rem;white-space:nowrap;
+  }
+  .btn-primary:hover{opacity:.92;}
+
+  /* ---------- Buttons / forms ---------- */
+  .btn{
+    border:0;border-radius:999px;padding:13px 22px;font-weight:800;font-size:1rem;width:100%;
+    background:var(--green);color:#fff;transition:.15s;
+  }
+  .btn:hover{background:var(--green-dark);}
+  .btn.secondary{background:var(--white);color:var(--green);border:1.5px solid var(--green);}
+  .btn.secondary:hover{background:var(--green-light);}
+  .btn.ghost{background:transparent;color:var(--green);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .field{margin:14px 0;}
+  .field label{display:block;font-weight:700;margin-bottom:6px;font-size:.9rem;color:var(--green-dark);}
+  .field input{
+    width:100%;padding:13px 14px;border:1.5px solid var(--line);
+    border-radius:12px;font-size:1rem;background:#fff;transition:.15s;
+  }
+  .field input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(27,122,67,.15);}
+  .toggle-row{display:flex;gap:8px;margin-bottom:8px;}
+  .toggle-row button{
+    flex:1;border:1.5px solid var(--green);background:#fff;color:var(--green);
+    border-radius:12px;padding:10px;font-weight:700;transition:.15s;
+  }
+  .toggle-row button.active{background:var(--green);color:#fff;}
+
+  /* ---------- Order summary list ---------- */
+  .panel{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;box-shadow:0 2px 8px rgba(20,92,50,.05);margin-bottom:14px;
+  }
+  .order-line{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 0;border-bottom:1px dashed var(--line);
+  }
+  .order-line:last-child{border-bottom:0;}
+  .order-line .name{font-weight:600;}
+  .order-line .name small{display:block;color:var(--muted);font-weight:400;font-size:.78rem;}
+  .order-line .right{display:flex;align-items:center;gap:10px;}
+  .line-total{font-weight:800;color:var(--green-dark);min-width:64px;text-align:right;}
+  .totals{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:2px solid var(--green-light);}
+  .totals .grand{font-size:1.35rem;font-weight:900;color:var(--green-dark);}
+  .empty{
+    text-align:center;color:var(--muted);padding:40px 16px;
+  }
+  .empty .big{font-size:3rem;}
+
+  /* ---------- Confirmed ---------- */
+  .confirm-card{text-align:center;padding:30px 20px;}
+  .check{
+    width:84px;height:84px;border-radius:50%;background:var(--green);color:#fff;
+    display:grid;place-items:center;margin:0 auto 16px;font-size:2.6rem;
+    animation:pop .4s ease;
+  }
+  @keyframes pop{0%{transform:scale(.4);opacity:0;}60%{transform:scale(1.12);}100%{transform:scale(1);opacity:1;}}
+  .order-no{font-size:2rem;font-weight:900;color:var(--green-dark);letter-spacing:1px;}
+
+  /* ---------- Kitchen ---------- */
+  .kitchen-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;
+  }
+  .live-dot{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--green-dark);font-size:.85rem;}
+  .live-dot .dot{width:10px;height:10px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6);}70%{box-shadow:0 0 0 12px rgba(46,204,113,0);}100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}}
+  .ticket-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}
+  .ticket{
+    background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);
+    border-radius:14px;padding:14px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:8px;animation:fade .3s ease;
+  }
+  .ticket.new{border-left-color:#e67e22;}
+  .ticket-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .ticket .table-tag{
+    background:var(--green);color:#fff;border-radius:10px;padding:5px 12px;font-weight:800;font-size:1rem;
+  }
+  .ticket .meta{font-size:.74rem;color:var(--muted);text-align:right;}
+  .ticket ul{list-style:none;margin:6px 0;padding:0;}
+  .ticket li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:.92rem;}
+  .ticket li:last-child{border-bottom:0;}
+  .ticket li .q{font-weight:800;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:0 8px;min-width:28px;text-align:center;}
+  .done-btn{
+    background:var(--green);color:#fff;border:0;border-radius:10px;padding:11px;font-weight:800;font-size:.95rem;margin-top:4px;
+  }
+  .done-btn:hover{background:var(--green-dark);}
+  .order-time{font-weight:700;color:var(--ink);}
+
+  .toast{
+    position:fixed;left:50%;bottom:90px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;
+    font-weight:600;font-size:.9rem;box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;transition:.25s;z-index:100;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .hint{font-size:.8rem;color:var(--muted);margin-top:6px;}
+  .badge-count{
+    display:inline-grid;place-items:center;background:#e67e22;color:#fff;
+    border-radius:999px;min-width:20px;height:20px;font-size:.72rem;font-weight:800;padding:0 5px;margin-left:4px;
+  }
+
+  @media (max-width:560px){
+    .brand h1{font-size:1rem;}
+    .nav button{padding:7px 11px;font-size:.78rem;}
+    .hero h2{font-size:1.2rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="brand">
+      <div class="logo">SC</div>
+      <div>
+        <h1>Shahira Corners</h1>
+        <small>SELERA KAMPUNG · ORDER ONLINE</small>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-go="menu" class="active">🍽️ Menu</button>
+      <button data-go="summary">🧾 Order</button>
+      <button data-go="kitchen">👨‍🍳 Kitchen <span class="badge-count" id="navKitchenCount" style="display:none">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ============ MENU PAGE ============ -->
+  <section class="page active" id="page-menu">
+    <div class="hero">
+      <h2>Selamat Datang! 👋</h2>
+      <p>Pilih makanan & minuman kegemaran anda. Tekan + untuk tambah ke order.</p>
+    </div>
+
+    <div class="section-title"><span class="pill">Makanan</span><h2>Food</h2></div>
+    <div class="menu-grid" id="grid-food"></div>
+
+    <div class="section-title"><span class="pill">Minuman</span><h2>Drinks</h2></div>
+    <div class="menu-grid" id="grid-drink"></div>
+  </section>
+
+  <!-- ============ ORDER SUMMARY PAGE ============ -->
+  <section class="page" id="page-summary">
+    <div class="section-title"><span class="pill">Step 1</span><h2>Your Order</h2></div>
+    <div class="panel" id="summary-items"></div>
+
+    <div class="panel">
+      <div class="section-title" style="margin:0 0 8px"><h2 style="font-size:1.05rem">Table or Name</h2></div>
+      <div class="toggle-row">
+        <button id="mode-table" class="active" onclick="setMode('table')">🪑 Table No.</button>
+        <button id="mode-name" onclick="setMode('name')">🙍 Name</button>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label id="cust-label" for="cust-input">Table Number</label>
+        <input id="cust-input" type="text" inputmode="numeric" placeholder="e.g. 12" autocomplete="off" />
+        <div class="hint">Tell us where to send your food.</div>
+      </div>
+    </div>
+
+    <button class="btn" id="confirm-btn" onclick="placeOrder()">✅ Confirm Order</button>
+    <button class="btn secondary" style="margin-top:10px" onclick="go('menu')">← Add more items</button>
+  </section>
+
+  <!-- ============ CONFIRMED PAGE ============ -->
+  <section class="page" id="page-confirmed">
+    <div class="panel confirm-card">
+      <div class="check">✓</div>
+      <h2 style="margin:0;color:var(--green-dark)">Order Confirmed!</h2>
+      <p style="color:var(--muted);margin:6px 0 16px">Your order has been sent to the kitchen 🍳</p>
+      <div class="order-no" id="confirmed-no">#000</div>
+      <div id="confirmed-details" style="text-align:left;margin-top:18px"></div>
+      <button class="btn" style="margin-top:18px" onclick="newOrder()">🍽️ Place Another Order</button>
+      <button class="btn ghost" style="margin-top:8px" onclick="go('kitchen')">View Kitchen Display →</button>
+    </div>
+  </section>
+
+  <!-- ============ KITCHEN PAGE ============ -->
+  <section class="page" id="page-kitchen">
+    <div class="kitchen-head">
+      <div class="section-title" style="margin:6px 0"><span class="pill">Live</span><h2>Kitchen Display</h2></div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="live-dot"><span class="dot"></span> Real-time</span>
+        <button class="btn ghost" style="width:auto;padding:8px 14px;font-size:.85rem" onclick="clearDone()">Clear done</button>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:0">New orders appear here automatically. Tap “Done” when an order is ready. Open this page on a second device/tab — it syncs live.</p>
+    <div class="ticket-grid" id="kitchen-tickets"></div>
+    <div class="empty" id="kitchen-empty">
+      <div class="big">🍳</div>
+      <p>No incoming orders yet.<br>Waiting for customers…</p>
+    </div>
+  </section>
+</main>
+
+<!-- Floating cart bar -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-bar-inner">
+    <div class="info">
+      <div class="badge" id="cart-count">0</div>
+      <div class="label"><b id="cart-items-label">0 items</b><br>in your order</div>
+    </div>
+    <button class="btn-primary" onclick="go('summary')">View Order →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   Shahira Corners — single-file food ordering system
+   - Menu data, cart, order placement
+   - Orders stored in localStorage so the Kitchen view updates in
+     real-time across tabs/devices (same browser) via 'storage' events.
+   ===================================================================== */
+
+const MENU = {
+  food:[
+    {id:'ng-ayam',   name:'Nasi Goreng Ayam',    price:8.00, emoji:'🍗', desc:'Fried rice with chicken'},
+    {id:'ng-cina',   name:'Nasi Goreng Cina',    price:8.50, emoji:'🥢', desc:'Chinese-style fried rice'},
+    {id:'ng-biasa',  name:'Nasi Goreng Biasa',   price:6.50, emoji:'🍚', desc:'Classic fried rice'},
+    {id:'ng-belacan',name:'Nasi Goreng Belacan', price:7.50, emoji:'🌶️', desc:'Spicy shrimp-paste fried rice'},
+    {id:'mee-goreng',name:'Mee Goreng',          price:7.00, emoji:'🍜', desc:'Fried noodles'},
+    {id:'mee-hailam',name:'Mee Hailam',          price:7.50, emoji:'🍲', desc:'Hailam-style saucy noodles'},
+    {id:'mee-bandung',name:'Mee Bandung',        price:7.50, emoji:'🥘', desc:'Noodles in spicy gravy'},
+  ],
+  drink:[
+    {id:'teh-o-ais', name:'Air Teh O Ais', price:2.00, emoji:'🧊', desc:'Iced tea, no milk'},
+    {id:'teh-ais',   name:'Teh Ais',       price:2.50, emoji:'🥤', desc:'Iced milk tea'},
+    {id:'sirap-ais', name:'Sirap Ais',     price:2.00, emoji:'🍓', desc:'Iced rose syrup'},
+    {id:'sirap-bandung',name:'Sirap Bandung',price:2.80,emoji:'🌸', desc:'Rose syrup with milk'},
+    {id:'kopi-o',    name:'Kopi O',         price:2.00, emoji:'☕', desc:'Black coffee'},
+    {id:'kopi-ais',  name:'Kopi Ais',       price:2.50, emoji:'🧋', desc:'Iced milk coffee'},
+  ]
+};
+const ALL = [...MENU.food, ...MENU.drink];
+const byId = id => ALL.find(x=>x.id===id);
+const money = n => 'RM ' + n.toFixed(2);
+
+const STORE_KEY = 'shahira_orders_v1';
+const SEQ_KEY   = 'shahira_seq_v1';
+
+let cart = {};            // {id: qty}
+let custMode = 'table';   // 'table' | 'name'
+
+/* ---------- Navigation ---------- */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.go===page);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(page==='summary') renderSummary();
+  if(page==='kitchen') renderKitchen();
+}
+document.getElementById('nav').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-go]');
+  if(b) go(b.dataset.go);
+});
+
+/* ---------- Menu rendering ---------- */
+function renderMenu(){
+  ['food','drink'].forEach(cat=>{
+    const grid = document.getElementById('grid-'+cat);
+    grid.innerHTML = MENU[cat].map(item=>cardHTML(item)).join('');
+  });
+  refreshSteppers();
+}
+function cardHTML(item){
+  return `
+    <div class="card">
+      <div class="card-top">
+        <span class="emoji">${item.emoji}</span>
+        <span class="price">${money(item.price)}</span>
+      </div>
+      <div>
+        <h3>${item.name}</h3>
+        <p class="desc">${item.desc}</p>
+      </div>
+      <div class="qty-row" id="qrow-${item.id}">
+        <!-- filled by refreshSteppers -->
+      </div>
+    </div>`;
+}
+function refreshSteppers(){
+  ALL.forEach(item=>{
+    const row = document.getElementById('qrow-'+item.id);
+    if(!row) return;
+    const q = cart[item.id]||0;
+    if(q===0){
+      row.innerHTML = `<button class="add-btn" onclick="changeQty('${item.id}',1)">+ Add</button>`;
+    }else{
+      row.innerHTML = `
+        <div class="stepper">
+          <button onclick="changeQty('${item.id}',-1)" aria-label="decrease">−</button>
+          <span class="count">${q}</span>
+          <button onclick="changeQty('${item.id}',1)" aria-label="increase">+</button>
+        </div>`;
+    }
+  });
+}
+function changeQty(id, delta){
+  const cur = cart[id]||0;
+  const next = Math.max(0, cur+delta);
+  if(next===0) delete cart[id]; else cart[id]=next;
+  refreshSteppers();
+  updateCartBar();
+  if(document.getElementById('page-summary').classList.contains('active')) renderSummary();
+}
+
+/* ---------- Cart bar ---------- */
+function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
+function cartTotal(){ return Object.entries(cart).reduce((s,[id,q])=>s+byId(id).price*q,0); }
+function updateCartBar(){
+  const n = cartCount();
+  document.getElementById('cart-count').textContent = n;
+  document.getElementById('cart-items-label').textContent = n+' item'+(n===1?'':'s');
+  document.getElementById('cart-bar').classList.toggle('show', n>0);
+}
+
+/* ---------- Order summary ---------- */
+function setMode(mode){
+  custMode = mode;
+  document.getElementById('mode-table').classList.toggle('active', mode==='table');
+  document.getElementById('mode-name').classList.toggle('active', mode==='name');
+  const input = document.getElementById('cust-input');
+  if(mode==='table'){
+    document.getElementById('cust-label').textContent='Table Number';
+    input.placeholder='e.g. 12'; input.inputMode='numeric';
+  }else{
+    document.getElementById('cust-label').textContent='Your Name';
+    input.placeholder='e.g. Ahmad'; input.inputMode='text';
+  }
+}
+function renderSummary(){
+  const box = document.getElementById('summary-items');
+  const entries = Object.entries(cart);
+  const confirmBtn = document.getElementById('confirm-btn');
+  if(entries.length===0){
+    box.innerHTML = `<div class="empty"><div class="big">🛒</div><p>Your order is empty.<br>Add some items from the menu!</p>
+      <button class="btn" style="max-width:240px;margin:10px auto 0" onclick="go('menu')">Browse Menu</button></div>`;
+    confirmBtn.disabled = true;
+    return;
+  }
+  confirmBtn.disabled = false;
+  let rows = entries.map(([id,q])=>{
+    const it = byId(id);
+    return `<div class="order-line">
+      <div class="name">${it.emoji} ${it.name}<small>${money(it.price)} each</small></div>
+      <div class="right">
+        <div class="stepper">
+          <button onclick="changeQty('${id}',-1)">−</button>
+          <span class="count">${q}</span>
+          <button onclick="changeQty('${id}',1)">+</button>
+        </div>
+        <span class="line-total">${money(it.price*q)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  box.innerHTML = rows + `
+    <div class="totals">
+      <div>Total · <b>${cartCount()}</b> item(s)</div>
+      <div class="grand">${money(cartTotal())}</div>
+    </div>`;
+}
+
+/* ---------- Place order ---------- */
+function nextSeq(){
+  let n = parseInt(localStorage.getItem(SEQ_KEY)||'0',10)+1;
+  localStorage.setItem(SEQ_KEY, String(n));
+  return n;
+}
+function loadOrders(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveOrders(list){
+  localStorage.setItem(STORE_KEY, JSON.stringify(list));
+}
+function placeOrder(){
+  if(cartCount()===0){ toast('Your order is empty'); go('menu'); return; }
+  const val = document.getElementById('cust-input').value.trim();
+  if(!val){
+    toast(custMode==='table'?'Please enter your table number':'Please enter your name');
+    document.getElementById('cust-input').focus();
+    return;
+  }
+  const seq = nextSeq();
+  const order = {
+    id: 'ord_'+Date.now()+'_'+seq,
+    no: seq,
+    mode: custMode,
+    customer: val,
+    items: Object.entries(cart).map(([id,q])=>{
+      const it = byId(id);
+      return {id, name:it.name, emoji:it.emoji, qty:q, price:it.price};
+    }),
+    total: cartTotal(),
+    count: cartCount(),
+    status: 'new',
+    createdAt: Date.now()
+  };
+  const list = loadOrders();
+  list.push(order);
+  saveOrders(list);
+
+  showConfirmed(order);
+  cart = {};
+  refreshSteppers();
+  updateCartBar();
+  updateKitchenBadge();
+}
+
+function showConfirmed(order){
+  document.getElementById('confirmed-no').textContent = '#'+String(order.no).padStart(3,'0');
+  const label = order.mode==='table' ? 'Table '+order.customer : order.customer;
+  document.getElementById('confirmed-details').innerHTML = `
+    <div class="panel" style="margin:0">
+      <div class="order-line"><div class="name">${order.mode==='table'?'🪑 Table':'🙍 Name'}</div>
+        <div class="right"><b>${label}</b></div></div>
+      ${order.items.map(it=>`<div class="order-line">
+        <div class="name">${it.emoji} ${it.name}</div>
+        <div class="right"><span class="line-total">×${it.qty}</span></div></div>`).join('')}
+      <div class="totals"><div>Total</div><div class="grand">${money(order.total)}</div></div>
+    </div>`;
+  go('confirmed');
+}
+function newOrder(){
+  document.getElementById('cust-input').value='';
+  go('menu');
+}
+
+/* ---------- Kitchen view (real-time) ---------- */
+function activeOrders(){ return loadOrders().filter(o=>o.status!=='done'); }
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return s+'s ago';
+  const m = Math.floor(s/60);
+  if(m<60) return m+'m ago';
+  return Math.floor(m/60)+'h ago';
+}
+function renderKitchen(){
+  const wrap = document.getElementById('kitchen-tickets');
+  const empty = document.getElementById('kitchen-empty');
+  const orders = activeOrders().sort((a,b)=>a.createdAt-b.createdAt);
+  if(orders.length===0){
+    wrap.innerHTML='';
+    empty.style.display='block';
+  }else{
+    empty.style.display='none';
+    wrap.innerHTML = orders.map(o=>{
+      const fresh = (Date.now()-o.createdAt) < 12000;
+      const head = o.mode==='table' ? '🪑 Table '+o.customer : '🙍 '+o.customer;
+      return `<div class="ticket ${fresh?'new':''}">
+        <div class="ticket-top">
+          <span class="table-tag">${head}</span>
+          <span class="meta">Order #${String(o.no).padStart(3,'0')}<br><span class="order-time">${timeAgo(o.createdAt)}</span></span>
+        </div>
+        <ul>
+          ${o.items.map(it=>`<li><span>${it.emoji} ${it.name}</span><span class="q">${it.qty}</span></li>`).join('')}
+        </ul>
+        <button class="done-btn" onclick="markDone('${o.id}')">✓ Mark Done</button>
+      </div>`;
+    }).join('');
+  }
+  updateKitchenBadge();
+}
+function markDone(id){
+  const list = loadOrders();
+  const o = list.find(x=>x.id===id);
+  if(o){ o.status='done'; o.doneAt=Date.now(); saveOrders(list); }
+  renderKitchen();
+}
+function clearDone(){
+  saveOrders(loadOrders().filter(o=>o.status!=='done'));
+  toast('Cleared completed orders');
+  renderKitchen();
+}
+function updateKitchenBadge(){
+  const n = activeOrders().length;
+  const badge = document.getElementById('navKitchenCount');
+  badge.textContent = n;
+  badge.style.display = n>0 ? 'inline-grid' : 'none';
+}
+
+/* ---------- Cross-tab/device live sync ---------- */
+window.addEventListener('storage', e=>{
+  if(e.key===STORE_KEY){
+    if(document.getElementById('page-kitchen').classList.contains('active')) renderKitchen();
+    updateKitchenBadge();
+  }
+});
+/* Refresh kitchen timestamps + catch same-tab changes every few seconds */
+setInterval(()=>{
+  if(document.getElementById('page-kitchen').classList.contains('active')) renderKitchen();
+  else updateKitchenBadge();
+}, 4000);
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------- Init ---------- */
+renderMenu();
+updateCartBar();
+updateKitchenBadge();
+</script>
+</body>
+</html>
